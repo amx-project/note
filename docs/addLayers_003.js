@@ -1,5 +1,3 @@
-//レイヤ設定
-
 function addLayers() {
 // ########## OSM（ラスター） ##########
 	map.addLayer({
@@ -56,6 +54,4 @@ function addLayers() {
 		'minzoom': 17,
 		'maxzoom': 24,
 	});
-// ########## OSM（ベクトル） ##########
-
-};
+}

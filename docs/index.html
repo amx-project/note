@@ -4,7 +4,6 @@
 <meta charset="utf-8" />
 <title>Sticky Note Map</title>
 <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0" />
-<meta name="description" content="「Sticky Note Map」is Simple Post on WebMap!" />
 <script src='https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.js'></script>
 <link href='https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.css' rel='stylesheet' />
 <script src="https://unpkg.com/@maplibre/maplibre-gl-geocoder@1.5.0/dist/maplibre-gl-geocoder.min.js"></script>
@@ -17,17 +16,15 @@
 <body>
 <div id="map"></div>
 <div id="info01">
-  <center>
-  <a href ="https://chosashi-data.org/amx/sticky_note_map/map/" target="_self"><b><big>Sticky Note Map</big></b></a><br>
-  <small>【Ver0.03】&copy;AMX_Project 2024</small><br>
-  <small><div  id="Count">　</div></small>
-  <button id="myBtn"><b>What is this Map</b></button>
-  </center>
+  <h3>Sticky Note Map</h3>
+  <p>Ver. 0.03n &copy; 2024 by AMX Project</p>
+  <p><div id="Count"></div></p>
+  <button id="myBtn"><b>What is this map?</b></button>
 </div>
-<script src="main_003.js"></script>
+<script src="main.js"></script>
 <div id="info02">
   <details id="newContents">
-  <summary><big>Latest Post (10)</big></summary>
+  <summary>Latest Post (10)</summary>
   <table id="infoTable" border="1.0" cellpadding="2">
     <tr><th>Post List</th></tr>
   </table>
@@ -36,18 +33,18 @@
 <div id="myModal" class="modal">
   <div class="modal-content">
     <span class="close">&times;</span>
-    <p><big><b>Sticky Note Map</b></big></p>
+    <h3>Sticky Note Map</h3>
     <p>
-      <span class="blue"><b>「Sticky Note Map」</b></span>is......<br>
+      <span class="blue"><b>Sticky Note Map</b></span> is a map where you can easily put your information on a smart map.<br>
 	  <hr>
-				<span><b>........................................</b></span>
+				<span><b>Originally developed by Office-Shirado</b></span>
 				<br>
-				<span class="blue"><b>........................................</b></span><br>
-				<span class="red"><b>........................................</b></span><br>
-				<span><b>........................................</b></span>
+				<span class="blue"><b>Maintained by AMX Project.</b></span><br>
+				<span class="red"><b>A main maintainer is hfu.</b></span><br>
+				<span><b>Contribution of hfu is a part of UN Smart Maps Group activities.</b></span>
 	</p>
   </div>
 </div>
-<script src="modal_003.js"></script>
+<script src="modal.js"></script>
 </body>
 </html>

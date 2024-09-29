@@ -1,4 +1,3 @@
-// ユーザー情報等
 const updateAccessCount_URL = "https://chosashi-data.org/amx/sticky_note_map/map/db/update_Access_Count.php";
 const getAccessCount_URL = "https://chosashi-data.org/amx/sticky_note_map/map/db/get_Access_Count.php";
 const getData_URL = "https://chosashi-data.org/amx/sticky_note_map/map/db/get_share_info.php";
@@ -14,46 +13,36 @@ var data_Lat = "";
 var ZoomLv = "";
 
 function Flyto_Point(data_Lng, data_Lat,ZoomLv){
-
 	map.flyTo({
 	  center: [data_Lng, data_Lat], 
 	  zoom: ZoomLv,
 	  speed: 2.5,
 	  curve: 1
-	});
-
-	const screenWidth = window.innerWidth;	// 画面幅を取得
-	console.log("画面幅：" + screenWidth);	// 画面幅を出力
-
-	// 最新投稿を閉じる
+	})
+	const screenWidth = window.innerWidth;
 	setTimeout(function(){
 		if(screenWidth < 700){
 			const detailsElement = document.getElementById('newContents');
 			detailsElement.open = false;	
 		}
-	},500);	// 500:0.5秒
+	},500)
 }
 
-// 初期化
 var user = "";
 var Lng = "";
 var Lat = "";
 var data = "";
 
-// 数値を3桁ごとにカンマ区切りにする関数
 function numberWithCommas(x) {
 	return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
-// アクセスカウンター（DB更新）
 response = fetch(updateAccessCount_URL)
 
-
-// アクセスカウンター（表示）【関数】
 async function updateCount() {
 	try {
 		const response = await fetch(getAccessCount_URL);
-		const count = await response.json(); // JSON形式でデータを取得
+		const count = await response.json();
 		document.getElementById('Count').textContent = numberWithCommas(count[0].Count) + ' PV';
 	}
 	catch (error) {
@@ -61,12 +50,10 @@ async function updateCount() {
 	}
 }
 
-// アクセスカウンター（表示）【関数実行】
-updateCount();
+updateCount()
 
-// ポイント取得リクエスト（リミット１２）
-var Latest_ID = "";	// 最新ID
-var Get_ID="";		// 取得したID
+var Latest_ID = ""
+var Get_ID=""
 
 async function Update_ShareInfo() {
   try {
@@ -74,10 +61,8 @@ async function Update_ShareInfo() {
 		.then(response => response.json())
 		.then(data => {
 			Get_ID = data[0].ID;
-			// IDを比較し、相違すれば更新する
 			if(Latest_ID != Get_ID){
 				getShareInfo();
-			console.log("投稿更新する");
 			}
 			else
 			{
@@ -90,11 +75,7 @@ async function Update_ShareInfo() {
   }
 }
 
-// 投稿削除
 function delete_Share_Info(ID) {
-
-//	console.log("ID;" + ID);
-
 	if (confirm('本当に削除しますか？')) {
 		fetch(delete_share_info_URL, {
 			method: 'POST',
@@ -102,18 +83,11 @@ function delete_Share_Info(ID) {
 			body: 'ID=' + ID
 		})
 		console.log("投稿を削除しました。ID:"+ ID);
-
-		// ポップアップ削除
 		Limit21_PopUp01.remove();
-
-		// 投稿とリストの再取得
 		getShareInfo();
 	}
-
-
 }
 
-// 投稿取得
 function getShareInfo() {
 
 	if (map.getSource('Limit12_Share_Info')) {
@@ -177,7 +151,6 @@ function disp_point_limit12(data) {
 				'User': data[i].User,
 				'Share_Info': data[i].Info,
 				'URL': data[i].URL,
-//				'Share_Info_Label': data[i].Info.substring(0, 30),
 				'Share_Info_Label': data[i].Info.length > 30 ? data[i].Info.substring(0, 30) + '...' : data[i].Info,
 				'NiceCount': data[i].NiceCount,
 				'PostDateTime': data[i].PostDateTime,
@@ -200,8 +173,6 @@ function disp_point_limit12(data) {
 		type: "FeatureCollection",
 		features: share_info_features
 	};
-
-//	console.log(geojson);
 
 	map.addSource("Limit12_Share_Info", {
 		"type": "geojson",
@@ -293,14 +264,10 @@ function disp_point_limit12(data) {
 		},
 		'minzoom': 14,
 		'maxzoom': 24,
-	});
-
-console.log("【リミット１２】ポイント表示完了");
+	})
 }
 
-// 1分ごとの更新
 setInterval(Update_ShareInfo, 1000 * 60);
-
 
 var map = new maplibregl.Map({
   container: 'map',
@@ -308,19 +275,15 @@ var map = new maplibregl.Map({
   style:{
 	"version":8,
 	"name":"Optimal_GSI_Shirado",
-//	"glyphs": "https://unopengis.github.io/noto/{fontstack}/{range}.pbf",
-//	"glyphs": "https://tile.openstreetmap.jp/fonts/{fontstack}/{range}.pbf",
-//	"glyphs": "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
 	"glyphs": "https://glyphs.geolonia.com/{fontstack}/{range}.pbf",
-//	"glyphs":"https://gsi-cyberjapan.github.io/optimal_bvmap/glyphs/{fontstack}/{range}.pbf",
 	"sprite":"https://gsi-cyberjapan.github.io/optimal_bvmap/sprite/std",
 	"sources":{
 	},
 	"layers":[
 	]
   },
-  center: [139.75417,36.50], // 日本全体
-  zoom: 1, // ズームレベル
+  center: [139.75417,36.50],
+  zoom: 1,
   minZoom: 1,
   maxZoom: 23,
 });
@@ -361,7 +324,6 @@ map.on('load', function () {
 	// 投稿
 	getShareInfo();
 
-
 	// 最新投稿のイベントリスナー追加
 	const detailsElement = document.getElementById('newContents');
 
@@ -374,18 +336,8 @@ map.on('load', function () {
 
 });
 
-
-//#################マップコントロール（画面制御）#################
-//ダブルクリックズーム制御（しない）
 map.doubleClickZoom.disable();
-
-//ドラッグ回転制御（しない）
 map.dragRotate.disable();
-
-//ピッチ回転制御（しない）
-//map.pitchWithRotate.disable();
-
-//タッチズーム回転制御（しない）
 map.touchZoomRotate.disableRotation();
 //#################マップコントロール（画面制御）#################
 
@@ -514,8 +466,7 @@ function MilliToTime(MilliSeconds) {
 	const Hours = Math.floor(Minutes / 60);
 	const RemainingMinutes = Minutes % 60;
 	const RemainingSeconds = Seconds % 60;
-//	return `${Hours}時間${RemainingMinutes}分${RemainingSeconds}秒`;
-	return `${Hours}時間${RemainingMinutes}分`;
+	return `${Hours} h ${RemainingMinutes} m`;
 }
 
 
@@ -568,16 +519,15 @@ function Popup_Limit12(e) {
         .setLngLat(e.lngLat)
         .setHTML(
 			'<span><b>' + '<big>' + infoContent + '</big>' + '</b></span>' + '<br>' +
-			'</span></b><span><b>' + '投稿者：' + Popup_Limit12_User + '</b></span>' + '<br>' +
-			'<span>投稿日時：</span><span id = "PostDateTime">' + Popup_Limit12_PostDateTime + '</span><span> </span>' +
-			'<button id="delete_share_info_Button" class="sendButton" onclick="delete_Share_Info(' + ID + ')"><b>削 除</b></button>' + '<br>' + 
-			'<span  class="nice" id = "NiceButton"><b>' + 'いいね！</b></span><b><span>（</span><span id = "NiceCount">' + Popup_Limit12_NiceCount + '</span><span>）</span></b>' +
-			'<span>残り：約<span id = "RemainingTime">' + RemainingTime + '</span><br>' +
+			'</span></b><span><b>' + 'from ' + Popup_Limit12_User + '</b></span>' + '<br>' +
+			'<span> at </span><span id = "PostDateTime">' + Popup_Limit12_PostDateTime + '</span><span> </span>' +
+			'<button id="delete_share_info_Button" class="sendButton" onclick="delete_Share_Info(' + ID + ')"><b>Delete</b></button>' + '<br>' + 
+			'<span  class="nice" id = "NiceButton"><b>' + 'Like </b></span><b><span>（</span><span id = "NiceCount">' + Popup_Limit12_NiceCount + '</span><span>）</span></b>' +
+			'<span><span id = "RemainingTime">' + RemainingTime + '</span> left<br>' +
 			'<hr>' +
-			"<a href='https://www.google.co.jp/maps?q=" + Popup_Limit12_Lat + "," + Popup_Limit12_Lng + "&hl=ja' target='_blank'>【 GoogleMap 】</a>" +
-			"<a href='https://www.google.com/maps/@?api=1&map_action=pano&parameters&viewpoint=" + Popup_Limit12_Lat + ",%20" + Popup_Limit12_Lng + "' target='_blank'>【 ストリートビュー 】</a><br>"
+			"<a href='https://www.google.co.jp/maps?q=" + Popup_Limit12_Lat + "," + Popup_Limit12_Lng + "&hl=ja' target='_blank'>Google Maps</a> / " +
+			"<a href='https://www.google.com/maps/@?api=1&map_action=pano&parameters&viewpoint=" + Popup_Limit12_Lat + ",%20" + Popup_Limit12_Lng + "' target='_blank'>Google Street View</a><br>"
 	).addTo(map);
-
 
 	document.getElementById("NiceButton").addEventListener("click", function() {
 		if( !PopupFlg ){
