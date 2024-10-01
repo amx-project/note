@@ -720,16 +720,16 @@ function PopUp_Context_Menu(e) {
     .setLngLat(e.lngLat)
     .setHTML(
       '<div id="contextmenu" style="width: 250px;">' +
-      "<b>【投稿】（100文字以内）</b><br>" +
+      "<b>Post (within 100 characters)</b><br>" +
       "<input type='hidden' name='db_user' value='" + db_user + "'>" +
       "<input type='hidden' name='db_Lng' value='" + db_Lng + "'>" +
       "<input type='hidden' name='db_Lat' value='" + db_Lat + "'>" +
-      "<input  type='text'class='share_info' id='db_share_info' name='db_share_info' placeholder='コメント又はＵＲＬ'  maxlength='100'>　" + " " +
-      "<button id='share_info_Button' class='sendButton' onclick='add_share_info()'><b>ＰＯＳＴ</b></button><br>" +
-      "<small>リンク </small><input  type='text'class='share_info' id='db_share_info_URL' name='db_share_info_URL' placeholder='ＵＲＬ'  maxlength='100'>　" + "<br>" +
+      "<input  type='text'class='share_info' id='db_share_info' name='db_share_info' placeholder='comment/URL' maxlength='100'> " + " " +
+      "<button id='share_info_Button' class='sendButton' onclick='add_share_info()'><b>POST</b></button><br>" +
+      "<small>リンク </small><input  type='text'class='share_info' id='db_share_info_URL' name='db_share_info_URL' placeholder='URL'  maxlength='100'> " + "<br>" +
       "<hr>" +
-      "<a href='https://www.google.co.jp/maps?q=" + e.lngLat.lat + "," + e.lngLat.lng + "&hl=ja' target='_blank'>【GoogleMap】</a>" +
-      "<a href='https://www.google.com/maps/@?api=1&map_action=pano&parameters&viewpoint=" + e.lngLat.lat + ",%20" + e.lngLat.lng + "' target='_blank'>【ストリートビュー】</a><br>" +
+      "<a href='https://www.google.co.jp/maps?q=" + e.lngLat.lat + "," + e.lngLat.lng + "&hl=ja' target='_blank'>Google Maps</a> / " +
+      "<a href='https://www.google.com/maps/@?api=1&map_action=pano&parameters&viewpoint=" + e.lngLat.lat + ",%20" + e.lngLat.lng + "' target='_blank'>Google Street View</a><br>" +
       '</div>'
     );
   popup_contextmenu.addTo(map);
