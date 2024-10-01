@@ -4,6 +4,11 @@ const API_URL = "https://chosashi-data.org/amx/sticky_note_map/api/";
 var data_Lng = "";
 var data_Lat = "";
 var ZoomLv = "";
+var user = "";
+var Lng = "";
+var Lat = "";
+var data = "";
+let map = "";
 
 function Flyto_Point(data_Lng, data_Lat, ZoomLv) {
   map.flyTo({
@@ -21,16 +26,10 @@ function Flyto_Point(data_Lng, data_Lat, ZoomLv) {
   }, 500)
 }
 
-var user = "";
-var Lng = "";
-var Lat = "";
-var data = "";
-
 function numberWithCommas(x) {
   return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
-// アクセスカウント追加
 var Update_Access_Count = fetch(API_URL, {
   method: 'POST',
   headers: {
@@ -307,48 +306,33 @@ function disp_point_limit12(data) {
   })
 }
 
-setInterval(Update_ShareInfo, 1000 * 60);
-
-var map = new maplibregl.Map({
-  container: 'map',
-  hash: true,
-  style: {
-    "version": 8,
-    "name": "Optimal_GSI_Shirado",
-    "glyphs": "https://glyphs.geolonia.com/{fontstack}/{range}.pbf",
-    "sprite": "https://gsi-cyberjapan.github.io/optimal_bvmap/sprite/std",
-    "sources": {},
-    "layers": []
-  },
-  center: [139.75417, 36.50],
-  zoom: 1,
-  minZoom: 1,
-  maxZoom: 23,
-});
-
-
 //ジャンプ（現在地）
 function getLocation(getLatLng) {
-  map.flyTo({
-    center: [getLatLng.coords.longitude, getLatLng.coords.latitude],
-    zoom: 17,
-    speed: 2.5,
-    curve: 1
-  });
-};
+	map.flyTo({
+	  center: [getLatLng.coords.longitude, getLatLng.coords.latitude],
+	  zoom: 17,
+	  speed: 2.5,
+	  curve: 1
+	});
+  };
 
+setInterval(Update_ShareInfo, 1000 * 60);
 
-map.on('load', function() {
+(async () => {
+  let style = await fetch('style.json').then(resp => resp.json())
 
-  // ソース追加
-  addSources();
+  map = new maplibregl.Map({
+    container: 'map',
+    hash: true,
+    style: style,
+    center: [139.75417, 36.50],
+    zoom: 1,
+    minZoom: 1,
+    maxZoom: 23,
+  })
 
-  // レイヤ追加
-  addLayers();
-
-
-  // 現在地取得
-  ZoomLv = map.getZoom();
+  map.on('load', function() {
+    ZoomLv = map.getZoom();
   //初期ズームレベルの時は、現在地ジャンプ
   if (ZoomLv == 1) {
     // 1.0秒遅延してジャンプ
@@ -821,3 +805,5 @@ map.on('movestart', function() {
 
 });
 //################# 画面移動 #################
+
+})()

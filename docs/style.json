@@ -1,0 +1,69 @@
+{
+    "version": 8,
+    "name": "Optimal_GSI_Shirado",
+    "glyphs": "https://glyphs.geolonia.com/{fontstack}/{range}.pbf",
+    "sprite": "https://gsi-cyberjapan.github.io/optimal_bvmap/sprite/std",
+    "sources": {
+      "OSM_Raster": {
+        "type": "raster",
+        "tiles": ["https://tile.openstreetmap.jp/{z}/{x}/{y}.png"],
+        "tileSize": 256,
+        "attribution": "<a href=\"https://www.openstreetmap.org/copyright\">&copy; OpenStreetMap contributors</a>"
+      },
+      "OSM_Vector": {
+        "type": "vector",
+        "tiles": ["https://tile.openstreetmap.jp/data/planet/{z}/{x}/{y}.pbf"],
+        "minzoom": 14,
+        "maxzoom": 14,
+        "attribution": "<a href=\"https://www.openstreetmap.org/copyright\">&copy; OpenStreetMap contributors</a>"
+      }
+    },
+    "layers": [
+      {
+        "id": "OSM_Raster",
+        "type": "raster",
+        "source": "OSM_Raster",
+        "minzoom": 0,
+        "maxzoom": 24
+      },
+      {
+        "id": "OSM_POI",
+        "type": "circle",
+        "source": "OSM_Vector",
+        "source-layer": "poi",
+        "filter": ["has", "name"],
+        "layout": {
+          "visibility": "visible"
+        },
+        "paint": {
+          "circle-radius": 3.5,
+          "circle-color": "#00ffff",
+          "circle-opacity": 1.0
+        },
+        "minzoom": 17,
+        "maxzoom": 24
+      },
+      {
+        "id": "OSM_POI_Label",
+        "type": "symbol",
+        "source": "OSM_Vector",
+        "source-layer": "poi",
+        "filter": ["has", "name"],
+        "layout": {
+          "text-field": ["get", "name"],
+          "text-font": ["Noto Sans CJK JP Bold"],
+          "text-anchor": "left",
+          "text-offset": [0.5, 0],
+          "visibility": "visible"
+        },
+        "paint": {
+          "text-color": "rgba(255, 255, 255, 0.7)",
+          "text-halo-color": "rgba(0,0,0,0.7)",
+          "text-halo-width": 1.0
+        },
+        "minzoom": 17,
+        "maxzoom": 24
+      }
+    ]
+  }
+  
