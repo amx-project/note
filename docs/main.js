@@ -38,9 +38,9 @@ var Update_Access_Count = fetch(API_URL, {
   method: 'POST',
   headers: {'Content-Type': 'application/x-www-form-urlencoded' },
   body: 'key=' + encodeURIComponent('update_Access_Count')
-})
+});
 
-async function updateCount() {
+(async () => {
   try {
     const response = await fetch(API_URL, {
         method: 'POST',
@@ -57,8 +57,7 @@ async function updateCount() {
   } catch (error) {
     console.error('Error fetching data:', error);
   }
-}
-updateCount()
+})();
 
 async function Update_ShareInfo() {
   try {
@@ -118,9 +117,9 @@ function getShareInfo() {
       fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'key=' + encodeURIComponent('get_Sticky_Note_List') // Sticky_Noteデータリスト取得
+        body: 'key=' + encodeURIComponent('get_Sticky_Note_List')
       })
-      .then(response => response.text()) // JSON ではなくテキストとして取得
+      .then(response => response.text())
       .then(text => {
         var trimmedText = text.trim();
         var data = JSON.parse(trimmedText);
@@ -151,15 +150,15 @@ function disp_point_limit12(data) {
     point = {
       type: 'Feature',
       properties: {
-        'ID': data[i].ID,
-        'User': data[i].User,
-        'Share_Info': data[i].Info,
-        'URL': data[i].URL,
-        'Share_Info_Label': data[i].Info.length > 30 ? data[i].Info.substring(0, 30) + '...' : data[i].Info,
-        'NiceCount': data[i].NiceCount,
-        'PostDateTime': data[i].PostDateTime,
-        'TermDateTime': data[i].TermDateTime,
-        'MaxTermDateTime': data[i].MaxTermDateTime
+        ID: data[i].ID,
+        User: data[i].User,
+        Share_Info: data[i].Info,
+        URL: data[i].URL,
+        Share_Info_Label: data[i].Info.length > 30 ? data[i].Info.substring(0, 30) + '...' : data[i].Info,
+        NiceCount: data[i].NiceCount,
+        PostDateTime: data[i].PostDateTime,
+        TermDateTime: data[i].TermDateTime,
+        MaxTermDateTime: data[i].MaxTermDateTime
       },
       geometry: {
         type: 'Point',
@@ -174,17 +173,12 @@ function disp_point_limit12(data) {
     features: share_info_features
   };
   map.addSource("Limit12_Share_Info", {
-    "type": "geojson",
-    "data": geojson,
-    "cluster": true,
-    "clusterMaxZoom": 12,
+    type: "geojson", data: geojson, cluster: true, clusterMaxZoom: 12,
   });
 
   map.addLayer({
-    'id': 'Limit12_Share_Info_Cluster',
-    'type': 'circle',
-    'source': 'Limit12_Share_Info',
-    'layout': {},
+    id: 'Limit12_Share_Info_Cluster', type: 'circle', source: 'Limit12_Share_Info',
+    layout: {},
     paint: {
       'circle-radius': 20.0, 
       'circle-color': 'rgba(0, 0, 255, 0.5)',
@@ -192,32 +186,26 @@ function disp_point_limit12(data) {
       'circle-stroke-width': 2.0,
       'circle-opacity': 1.0,
     },
-    'minzoom': 0,
-    'maxzoom': 14,
+    minzoom: 0, maxzoom: 14
   });
 
   map.addLayer({
-    'id': 'Limit12_Share_Info_Cluster_Label',
-    'type': 'symbol',
-    'source': 'Limit12_Share_Info',
-    'layout': {
+    id: 'Limit12_Share_Info_Cluster_Label', type: 'symbol', source: 'Limit12_Share_Info',
+    layout: {
       "text-field": ["get", "point_count_abbreviated"],
       "text-font": ["NotoSansJP-Regular"],
     },
-    'paint': {
+    paint: {
       'text-color': 'rgba(0, 0, 255, 1)',
       'text-halo-color': 'rgba(255,255,255,1)',
       'text-halo-width': 2.0,
     },
-    'minzoom': 0,
-    'maxzoom': 14,
+    minzoom: 0, maxzoom: 14
   });
 
   map.addLayer({
-    'id': 'Limit12_Share_Info',
-    'type': 'circle',
-    'source': 'Limit12_Share_Info',
-    'layout': {},
+    id: 'Limit12_Share_Info', type: 'circle', source: 'Limit12_Share_Info',
+    layout: {},
     paint: {
       'circle-radius': 3.5, 
       'circle-color': 'rgba(0, 0, 255, 1)',
@@ -229,36 +217,31 @@ function disp_point_limit12(data) {
       ],
       'circle-opacity': 1.0,
     },
-    'minzoom': 14,
-    'maxzoom': 24,
+    minzoom: 14, maxzoom: 24
   });
 
   map.addLayer({
-    'id': 'Limit12_Share_Info_Label',
-    'type': 'symbol',
-    'source': 'Limit12_Share_Info',
-    'layout': {
+    id: 'Limit12_Share_Info_Label', type: 'symbol',
+    source: 'Limit12_Share_Info',
+    layout: {
       'text-field': ['get', 'Share_Info_Label'],
       "text-font": ["NotoSansJP-Regular"],
       'text-anchor': 'left',
       'text-offset': [0.5, 0],
     },
-    'paint': {
+    paint: {
       'text-color': 'rgba(0, 0, 255, 1)',
       'text-halo-color': 'rgba(255,255,255,1)',
       'text-halo-width': 2.0,
     },
-    'minzoom': 14,
-    'maxzoom': 24,
+    minzoom: 14, maxzoom: 24
   })
 }
 
 function getLocation(getLatLng) {
 	map.flyTo({
 	  center: [getLatLng.coords.longitude, getLatLng.coords.latitude],
-	  zoom: 17,
-	  speed: 2.5,
-	  curve: 1
+	  zoom: 17, speed: 2.5, curve: 1
 	});
 }
 setInterval(Update_ShareInfo, 1000 * 60);
@@ -293,15 +276,11 @@ function add_share_info() {
 
 function PopUp_Context_Menu(e) {
   ZoomLv = map.getZoom();
-
   db_user = "guest";
   db_Lng = e.lngLat.lng;
   db_Lat = e.lngLat.lat;
-
-  // POPUPの削除
   popup_contextmenu.remove();
   Limit21_PopUp01.remove();
-
   popup_contextmenu = new maplibregl.Popup({
       closeButton: false
     })
@@ -321,15 +300,9 @@ function PopUp_Context_Menu(e) {
       '</div>'
     );
   popup_contextmenu.addTo(map);
-
-
   const textBox = document.getElementById('db_share_info');
   textBox.focus();
-
-
 }
-
-
 
 function update_PopupCount(e) {
   var ID = e.features[0].properties['ID'];
@@ -340,9 +313,9 @@ function update_PopupCount(e) {
   })
   for (var i = 0; i < share_info_features.length; i++) {
     if (share_info_features[i].properties.ID === ID) {
-      var TermDateTime = new Date(share_info_features[i].properties.TermDateTime); // TermDateTimeをDateオブジェクトに変換
-      TermDateTime.setMinutes(TermDateTime.getMinutes() + 12); // 12分加算
-      share_info_features[i].properties.TermDateTime = TermDateTime.toISOString(); // 更新されたTermDateTimeをfeatures配列に反映し、ISO形式で保存
+      var TermDateTime = new Date(share_info_features[i].properties.TermDateTime);
+      TermDateTime.setMinutes(TermDateTime.getMinutes() + 12);
+      share_info_features[i].properties.TermDateTime = TermDateTime.toISOString();
     }
   }
   var geojson = {
@@ -358,10 +331,10 @@ function update_NiceCount(ID) {
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
     },
-    body: 'key=' + encodeURIComponent('update_NiceCount') + '&ID=' + encodeURIComponent(ID) // いいね！カウント追加（ID）
+    body: 'key=' + encodeURIComponent('update_NiceCount') + '&ID=' + encodeURIComponent(ID)
   })
   const NiceCountElement = document.getElementById("NiceCount");
-  let CurrentNiceCount = parseInt(NiceCountElement.textContent); // テキストを数値に変換
+  let CurrentNiceCount = parseInt(NiceCountElement.textContent);
   CurrentNiceCount++;
   NiceCountElement.textContent = CurrentNiceCount;
 };
@@ -388,9 +361,7 @@ function Popup_Limit12(e) {
   var Popup_Limit12_TermDateTime = e.features[0].properties['TermDateTime'];
   var Popup_Limit12_MaxTermDateTime = e.features[0].properties['MaxTermDateTime'];
   var Popup_Limit12_NiceCount = e.features[0].properties['NiceCount'];
-
   var TermDateTime = new Date(Popup_Limit12_TermDateTime);
-
   var now = new Date();
   var MilliSeconds = TermDateTime - now;
   var RemainingTime = MilliToTime(MilliSeconds)
@@ -424,43 +395,27 @@ function Popup_Limit12(e) {
   document.getElementById("NiceButton").addEventListener("click", function() {
     if (!PopupFlg) {
       update_NiceCount(ID);
-
       PopupFlg = true;
-
-      // 表示期間の終了日時をDateオブジェクトに変換
       var TermDateTime = new Date(Popup_Limit12_TermDateTime);
       var MaxTermDateTime = new Date(Popup_Limit12_MaxTermDateTime);
-
-      // 1時間後の日時を計算
       TermDateTime.setHours(TermDateTime.getHours() + 1);
-
-      // 残り時間を計算し、表示
       if (MaxTermDateTime > TermDateTime) {
         var now = new Date();
         var MilliSeconds = TermDateTime - now;
         var RemainingTime = MilliToTime(MilliSeconds);
-
-        // 残り時間を適切な形式で表示する処理（ミリ秒を日時に変換など）
         document.getElementById("RemainingTime").textContent = RemainingTime;
-
-
         for (var i = 0; i < share_info_features.length; i++) {
           if (share_info_features[i].properties.ID === ID) {
-            // いいね！カウント
-            share_info_features[i].properties.NiceCount = parseInt(share_info_features[i].properties.NiceCount) + 1; // いいね！カウント+1
-
-            // 期限日時
-            var TermDateTime = new Date(share_info_features[i].properties.TermDateTime); // TermDateTimeをDateオブジェクトに変換
-            TermDateTime.setHours(TermDateTime.getHours() + 1); // 1時間加算
-            share_info_features[i].properties.TermDateTime = TermDateTime.toISOString(); // 更新されたTermDateTimeをfeatures配列に反映し、ISO形式で保存
+            share_info_features[i].properties.NiceCount = parseInt(share_info_features[i].properties.NiceCount) + 1;
+            var TermDateTime = new Date(share_info_features[i].properties.TermDateTime);
+            TermDateTime.setHours(TermDateTime.getHours() + 1);
+            share_info_features[i].properties.TermDateTime = TermDateTime.toISOString();
           }
         }
-
         var geojson = {
           type: "FeatureCollection",
           features: share_info_features
         };
-
         map.getSource('Limit12_Share_Info').setData(geojson);
       }
     }
@@ -541,29 +496,17 @@ const geocoderApi = {
   });
   map.doubleClickZoom.disable();
 
-  map.addControl(
-    new MaplibreGeocoder(geocoderApi, {
-      maplibregl
-    })
-  );
-
-  map.addControl(new maplibregl.GeolocateControl({
-    positionOptions: {
-      enableHighAccuracy: true
-    },
-    fitBoundsOptions: {
-      maxZoom: 20
-    },
-    trackUserLocation: true,
-    showUserLocation: true
-  }),
-  'top-right'
-  );
+  map.addControl(new MaplibreGeocoder(geocoderApi, { maplibregl }))
+  map.addControl(new maplibregl.FullscreenControl())
+  map.addControl(new maplibregl.NavigationControl())
+  map.addControl(new maplibregl.TerrainControl({ source: "gel-raster-dem" }))
+  map.addControl(new maplibregl.ScaleControl({ unit: "metric" }))
+  map.addControl(new maplibregl.GeolocateControl())
 
   map.on('click', 'Limit12_Share_Info', (e) => { Popup_Limit12(e) })
   map.on('click', 'Limit12_Share_Info_Label', (e) => { Popup_Limit12(e) })
   map.on('click', 'Limit12_Share_Info_Cluster', (e) => {
-    const screenWidth = window.innerWidth; // 画面幅を取得
+    const screenWidth = window.innerWidth;
     if (screenWidth < 700) { ZoomLv = map.getZoom() + 3 } else { ZoomLv = map.getZoom() + 4 }
     data_Lng = e.features[0].geometry.coordinates[0];
     data_Lat = e.features[0].geometry.coordinates[1];
@@ -572,13 +515,13 @@ const geocoderApi = {
   map.on('click', function(e) {
     popup_contextmenu.remove();
     if (DoubleClick_Flg) {
-      PopUp_Context_Menu(e); // 右クリックメニューの呼び出し
-      DoubleClick_Flg = false; // 次のクリックに備えて状態をリセット
+      PopUp_Context_Menu(e);
+      DoubleClick_Flg = false;
     } else {
       DoubleClick_Flg = true;
       setTimeout(() => {
-        DoubleClick_Flg = false; // 一定時間後に状態をリセット
-      }, 300); // 300ミリ秒後にリセット
+        DoubleClick_Flg = false;
+      }, 300);
     }
   });
   map.on('mousemove', 'Limit12_Share_Info', (e) => {
