@@ -9,8 +9,14 @@ var Lng = "";
 var Lat = "";
 var data = "";
 let map = "";
+var Popup_Layers_Name = "";
+var Latest_ID = 0;
+var Get_ID = 0;
+var DoubleClick_Flg = false;
+var Limit21_PopUp01 = new maplibregl.Popup()
+var PopupFlg = false;
 
-function Flyto_Point(data_Lng, data_Lat, ZoomLv) {
+const Flyto_Point = (data_Lng, data_Lat, ZoomLv) => {
   map.flyTo({
     center: [data_Lng, data_Lat],
     zoom: ZoomLv,
@@ -26,60 +32,43 @@ function Flyto_Point(data_Lng, data_Lat, ZoomLv) {
   }, 500)
 }
 
-function numberWithCommas(x) {
-  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
+const numberWithCommas = (x) => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 
 var Update_Access_Count = fetch(API_URL, {
   method: 'POST',
-  headers: {
-    'Content-Type': 'application/x-www-form-urlencoded'
-  },
-  body: 'key=' + encodeURIComponent('update_Access_Count') // アクセスカウント追加
+  headers: {'Content-Type': 'application/x-www-form-urlencoded' },
+  body: 'key=' + encodeURIComponent('update_Access_Count')
 })
-console.log("アクセスカウントを追加しました。");
 
-// アクセスカウント更新
 async function updateCount() {
   try {
     const response = await fetch(API_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: 'key=' + encodeURIComponent('get_Access_Count') // アクセスカウント取得
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'key=' + encodeURIComponent('get_Access_Count')
       })
-      .then(response => response.text()) // JSON ではなくテキストとして取得
+      .then(response => response.text())
       .then(text => {
-        var trimmedText = text.trim(); // 先頭と末尾の空白文字を削除
+        var trimmedText = text.trim();
         var data = JSON.parse(trimmedText);
         var count = data[0].Count;
         document.getElementById('Count').textContent = numberWithCommas(count) + ' PV';
-        console.log("アクセスカウントを取得しました。：" + count);
       })
-
   } catch (error) {
     console.error('Error fetching data:', error);
   }
 }
-
 updateCount()
-
-var Latest_ID = 0;
-var Get_ID = 0;
 
 async function Update_ShareInfo() {
   try {
     await fetch(API_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: 'key=' + encodeURIComponent('confirm_ID') // 最終投稿ID確認
-      }, )
-      .then(response => response.text()) // JSON ではなくテキストとして取得
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'key=' + encodeURIComponent('confirm_ID')
+      })
+      .then(response => response.text())
       .then(text => {
-        // 先頭と末尾の空白文字を削除
         var trimmedText = text.trim();
         var data = JSON.parse(trimmedText);
         Get_ID = data[0].ID;
@@ -98,92 +87,66 @@ function delete_Share_Info(ID) {
   if (confirm('本当に削除しますか？')) {
     fetch(API_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: 'key=' + encodeURIComponent('delete_Sticky_Note') + '&ID=' + encodeURIComponent(ID) // Sticky_Noteデータ削除（ID）
+      headers: {'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'key=' + encodeURIComponent('delete_Sticky_Note') + '&ID=' + encodeURIComponent(ID)
     })
-    console.log("投稿を削除しました。ID:" + ID);
     Limit21_PopUp01.remove();
     getShareInfo();
   }
 }
 
 function getShareInfo() {
-
   if (map.getSource('Limit12_Share_Info')) {
-    // レイヤ削除
     map.removeLayer('Limit12_Share_Info')
     map.removeLayer('Limit12_Share_Info_Label')
     map.removeLayer('Limit12_Share_Info_Cluster')
     map.removeLayer('Limit12_Share_Info_Cluster_Label')
-    // ソース削除
     map.removeSource('Limit12_Share_Info');
   }
-
   setTimeout(function() {
     fetch(API_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: 'key=' + encodeURIComponent('get_Sticky_Note') // Sticky_Noteデータ取得
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'key=' + encodeURIComponent('get_Sticky_Note')
       })
-      .then(response => response.text()) // JSON ではなくテキストとして取得
+      .then(response => response.text())
       .then(text => {
-        // 先頭と末尾の空白文字を削除
         var trimmedText = text.trim();
         var data = JSON.parse(trimmedText);
-        //			console.log(data);
         disp_point_limit12(data);
       }),
-
       fetch(API_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: 'key=' + encodeURIComponent('get_Sticky_Note_List') // Sticky_Noteデータリスト取得
       })
       .then(response => response.text()) // JSON ではなくテキストとして取得
       .then(text => {
-        // 先頭と末尾の空白文字を削除
         var trimmedText = text.trim();
         var data = JSON.parse(trimmedText);
-        //			console.log(data);
-
         const tableBody = document.getElementById('infoTable').querySelector('tbody');
-        tableBody.innerHTML = ''; // 既存の行をクリア
-
+        tableBody.innerHTML = ''; 
         data.forEach(row => {
           const newRow = document.createElement('tr');
           const truncatedInfo = row.Info.length > 30 ? row.Info.substring(0, 30) + '...' : row.Info;
           newRow.innerHTML = `
 					<td class="yubi" onclick="Flyto_Point('${row.Lng}', '${row.Lat}',17)">${truncatedInfo}<br><small>(ID:${row.ID}) ${row.PostDateTime}<small></td>
 				`;
-          //			console.log(data);
           tableBody.appendChild(newRow);
         });
       })
-    console.log("【リミット１２】リスト表示完了");
-  }, 500); // 500:0.5秒
+  }, 500);
 }
 
-// ポイントの表示（リミット１２）
 var share_info_features = [];
-
 function disp_point_limit12(data) {
   share_info_features = [];
-
-  //	console.log(data);// ここで中身を確認
   var latlng;
   var description;
-
   var ilen = data.length;
 
   for (var i = 0; i < ilen; i++) {
     var feature = [];
-
     var point = [];
     point = {
       type: 'Feature',
@@ -204,75 +167,61 @@ function disp_point_limit12(data) {
       }
     };
     share_info_features.push(point);
-
-    // 最新情報のIDを入れる
     Latest_ID = data[i].ID;
   }
-
-
   var geojson = {
     type: "FeatureCollection",
     features: share_info_features
   };
-
   map.addSource("Limit12_Share_Info", {
     "type": "geojson",
     "data": geojson,
     "cluster": true,
-    "clusterMaxZoom": 14, // クラスタリングを行う最大ズームレベル
+    "clusterMaxZoom": 12,
   });
 
-
-  // クラスター（円）
   map.addLayer({
     'id': 'Limit12_Share_Info_Cluster',
     'type': 'circle',
     'source': 'Limit12_Share_Info',
     'layout': {},
     paint: {
-      'circle-radius': 20.0, //半径
+      'circle-radius': 20.0, 
       'circle-color': 'rgba(0, 0, 255, 0.5)',
-      'circle-stroke-color': 'rgba(255,255,255,0.5)', // ラベルの外枠の色を白に設定
-      'circle-stroke-width': 2.0, // ラベルの外枠の幅を2に設定
+      'circle-stroke-color': 'rgba(255,255,255,0.5)',
+      'circle-stroke-width': 2.0,
       'circle-opacity': 1.0,
     },
     'minzoom': 0,
     'maxzoom': 14,
   });
 
-  // クラスター（ラベル）
   map.addLayer({
     'id': 'Limit12_Share_Info_Cluster_Label',
     'type': 'symbol',
     'source': 'Limit12_Share_Info',
     'layout': {
-      //			'text-field': ['get', 'Share_Info_Label'],
       "text-field": ["get", "point_count_abbreviated"],
       "text-font": ["NotoSansJP-Regular"],
-      //			'text-anchor': 'left',
-      //			'text-offset': [0.5, 0],
     },
     'paint': {
       'text-color': 'rgba(0, 0, 255, 1)',
-      'text-halo-color': 'rgba(255,255,255,1)', // ラベルの外枠の色を白に設定
-      'text-halo-width': 2.0, // ラベルの外枠の幅を2に設定
+      'text-halo-color': 'rgba(255,255,255,1)',
+      'text-halo-width': 2.0,
     },
     'minzoom': 0,
     'maxzoom': 14,
   });
 
-
-  // 投稿ポイント
   map.addLayer({
     'id': 'Limit12_Share_Info',
     'type': 'circle',
     'source': 'Limit12_Share_Info',
     'layout': {},
     paint: {
-      'circle-radius': 3.5, //半径
+      'circle-radius': 3.5, 
       'circle-color': 'rgba(0, 0, 255, 1)',
-      'circle-stroke-color': 'rgba(255,255,255,1)', // ラベルの外枠の色を白に設定
-      //			'circle-stroke-width': 2.0, // ラベルの外枠の幅を2に設定
+      'circle-stroke-color': 'rgba(255,255,255,1)',
       "circle-stroke-width": ["step", ["zoom"],
         0.0, 4,
         0.2, 13,
@@ -284,8 +233,6 @@ function disp_point_limit12(data) {
     'maxzoom': 24,
   });
 
-
-  // 投稿ポイント（ラベル）
   map.addLayer({
     'id': 'Limit12_Share_Info_Label',
     'type': 'symbol',
@@ -298,15 +245,14 @@ function disp_point_limit12(data) {
     },
     'paint': {
       'text-color': 'rgba(0, 0, 255, 1)',
-      'text-halo-color': 'rgba(255,255,255,1)', // ラベルの外枠の色を白に設定
-      'text-halo-width': 2.0, // ラベルの外枠の幅を2に設定
+      'text-halo-color': 'rgba(255,255,255,1)',
+      'text-halo-width': 2.0,
     },
     'minzoom': 14,
     'maxzoom': 24,
   })
 }
 
-//ジャンプ（現在地）
 function getLocation(getLatLng) {
 	map.flyTo({
 	  center: [getLatLng.coords.longitude, getLatLng.coords.latitude],
@@ -314,166 +260,99 @@ function getLocation(getLatLng) {
 	  speed: 2.5,
 	  curve: 1
 	});
-  };
-
+}
 setInterval(Update_ShareInfo, 1000 * 60);
 
-(async () => {
-  let style = await fetch('terrain22.json').then(resp => resp.json())
-  maplibregl.addProtocol("pmtiles", (new pmtiles.Protocol()).tile);
+var popup_contextmenu = new maplibregl.Popup();
+var LongTouch_Flg = false;
+var db_user = "";
+var db_Lng = "";
+var db_Lat = "";
+var db_share_info = "test";
+var db_POST_Lng = "";
+var db_POST_Lat = "";
 
-  map = new maplibregl.Map({
-    container: 'map',
-    hash: true,
-    style: style,
-    center: [139.75417, 36.50],
-    zoom: 1,
-    minZoom: 1,
-    maxZoom: 23,
-  })
+function add_share_info() {
+  db_share_info = document.getElementById("db_share_info").value;
+  db_share_info_URL = document.getElementById("db_share_info_URL").value;
+  if (db_share_info !== "" || db_share_info_URL !== "") {
+    popup_contextmenu.remove();
+    if (db_share_info === "") {
+      db_share_info = db_share_info_URL;
+    }
+    fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'key=' + encodeURIComponent('add_Sticky_Note') + '&db_user=' + db_user + '&db_share_info=' + db_share_info + '&db_share_info_URL=' + db_share_info_URL + '&db_Lng=' + db_Lng + '&db_Lat=' + db_Lat
+      })
+      .then(getShareInfo())
+  } else {
+    alert("コメントが入力されていません。");
+  }
+}
 
-  map.on('load', function() {
-    ZoomLv = map.getZoom();
-  //初期ズームレベルの時は、現在地ジャンプ
-  if (ZoomLv == 1) {
-    // 1.0秒遅延してジャンプ
-    setTimeout(
-      function() {
-        navigator.geolocation.getCurrentPosition(getLocation);
-      }, 1000
+function PopUp_Context_Menu(e) {
+  ZoomLv = map.getZoom();
+
+  db_user = "guest";
+  db_Lng = e.lngLat.lng;
+  db_Lat = e.lngLat.lat;
+
+  // POPUPの削除
+  popup_contextmenu.remove();
+  Limit21_PopUp01.remove();
+
+  popup_contextmenu = new maplibregl.Popup({
+      closeButton: false
+    })
+    .setLngLat(e.lngLat)
+    .setHTML(
+      '<div id="contextmenu" style="width: 250px;">' +
+      "<b>Post (within 100 characters)</b><br>" +
+      "<input type='hidden' name='db_user' value='" + db_user + "'>" +
+      "<input type='hidden' name='db_Lng' value='" + db_Lng + "'>" +
+      "<input type='hidden' name='db_Lat' value='" + db_Lat + "'>" +
+      "<input  type='text'class='share_info' id='db_share_info' name='db_share_info' placeholder='comment/URL' maxlength='100'> " + " " +
+      "<button id='share_info_Button' class='sendButton' onclick='add_share_info()'><b>POST</b></button><br>" +
+      "<small>リンク </small><input  type='text'class='share_info' id='db_share_info_URL' name='db_share_info_URL' placeholder='URL'  maxlength='100'> " + "<br>" +
+      "<hr>" +
+      "<a href='https://www.google.co.jp/maps?q=" + e.lngLat.lat + "," + e.lngLat.lng + "&hl=ja' target='_blank'>Google Maps</a> / " +
+      "<a href='https://www.google.com/maps/@?api=1&map_action=pano&parameters&viewpoint=" + e.lngLat.lat + ",%20" + e.lngLat.lng + "' target='_blank'>Google Street View</a><br>" +
+      '</div>'
     );
-  }
-
-  // 投稿
-  getShareInfo();
-
-  // 最新投稿のイベントリスナー追加
-  const detailsElement = document.getElementById('newContents');
-
-  detailsElement.addEventListener('toggle', () => {
-    if (detailsElement.open) {
-      // 最新投稿の更新
-      Update_ShareInfo();
-    }
-  });
-
-});
-
-map.doubleClickZoom.disable();
-map.dragRotate.disable();
-map.touchZoomRotate.disableRotation();
-//#################マップコントロール（画面制御）#################
+  popup_contextmenu.addTo(map);
 
 
-//#################マップコントロール（ツール）#################
-//ジオコーダー
-const geocoderApi = {
-  forwardGeocode: async (config) => {
-    const features = [];
-    try {
-      const request =
-        `https://nominatim.openstreetmap.org/search?q=${
-                config.query
-            }&format=geojson&polygon_geojson=1&addressdetails=1`;
-      const response = await fetch(request);
-      const geojson = await response.json();
-      for (const feature of geojson.features) {
-        const center = [
-          feature.bbox[0] +
-          (feature.bbox[2] - feature.bbox[0]) / 2,
-          feature.bbox[1] +
-          (feature.bbox[3] - feature.bbox[1]) / 2
-        ];
-        const point = {
-          type: 'Feature',
-          geometry: {
-            type: 'Point',
-            coordinates: center
-          },
-          place_name: feature.properties.display_name,
-          properties: feature.properties,
-          text: feature.properties.display_name,
-          place_type: ['place'],
-          center
-        };
-        features.push(point);
-      }
-    } catch (e) {
-      console.error(`Failed to forwardGeocode with error: ${e}`);
-    }
-
-    return {
-      features
-    };
-  }
-};
-map.addControl(
-  new MaplibreGeocoder(geocoderApi, {
-    maplibregl
-  })
-);
+  const textBox = document.getElementById('db_share_info');
+  textBox.focus();
 
 
-// 現在位置表示
-map.addControl(new maplibregl.GeolocateControl({
-    positionOptions: {
-      enableHighAccuracy: true
-    },
-    fitBoundsOptions: {
-      maxZoom: 20
-    },
-    trackUserLocation: true,
-    showUserLocation: true
-  }),
-  'top-right'
-);
-
-//#################マップコントロール（ツール）#################
+}
 
 
-
-//################# クリックイベント #################
-// ポップアップ
-var Limit21_PopUp01 = new maplibregl.Popup()
-var PopupFlg = false;
 
 function update_PopupCount(e) {
-
   var ID = e.features[0].properties['ID'];
-
-  // PopupCount追加
   fetch(API_URL, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
-    body: 'key=' + encodeURIComponent('update_PopupCount') + '&ID=' + encodeURIComponent(ID) // Popupカウント追加（ID）
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'key=' + encodeURIComponent('update_PopupCount') + '&ID=' + encodeURIComponent(ID)
   })
-  console.log("ポップアップ（１２分追加）");
-
   for (var i = 0; i < share_info_features.length; i++) {
     if (share_info_features[i].properties.ID === ID) {
-      // 期限日時
       var TermDateTime = new Date(share_info_features[i].properties.TermDateTime); // TermDateTimeをDateオブジェクトに変換
       TermDateTime.setMinutes(TermDateTime.getMinutes() + 12); // 12分加算
       share_info_features[i].properties.TermDateTime = TermDateTime.toISOString(); // 更新されたTermDateTimeをfeatures配列に反映し、ISO形式で保存
     }
   }
-
   var geojson = {
     type: "FeatureCollection",
     features: share_info_features
   };
-
   map.getSource('Limit12_Share_Info').setData(geojson);
-
-
-
 };
 
 function update_NiceCount(ID) {
-
-  // NiceCount追加
   fetch(API_URL, {
     method: 'POST',
     headers: {
@@ -481,15 +360,12 @@ function update_NiceCount(ID) {
     },
     body: 'key=' + encodeURIComponent('update_NiceCount') + '&ID=' + encodeURIComponent(ID) // いいね！カウント追加（ID）
   })
-
   const NiceCountElement = document.getElementById("NiceCount");
   let CurrentNiceCount = parseInt(NiceCountElement.textContent); // テキストを数値に変換
   CurrentNiceCount++;
   NiceCountElement.textContent = CurrentNiceCount;
-  console.log("いいね！（カウント、１時間追加）");
 };
 
-// ミリ秒から時間・分にする
 function MilliToTime(MilliSeconds) {
   const Seconds = Math.floor(MilliSeconds / 1000);
   const Minutes = Math.floor(Seconds / 60);
@@ -499,10 +375,7 @@ function MilliToTime(MilliSeconds) {
   return `${Hours} h ${RemainingMinutes} m`;
 }
 
-
-// Limit12
 function Popup_Limit12(e) {
-
   PopupFlg = false;
 
   var ID = e.features[0].properties['ID'];
@@ -516,23 +389,13 @@ function Popup_Limit12(e) {
   var Popup_Limit12_MaxTermDateTime = e.features[0].properties['MaxTermDateTime'];
   var Popup_Limit12_NiceCount = e.features[0].properties['NiceCount'];
 
-
-  // 表示期間の終了日時をDateオブジェクトに変換
   var TermDateTime = new Date(Popup_Limit12_TermDateTime);
 
-  // 残り時間を計算し、表示（必要であれば）
   var now = new Date();
   var MilliSeconds = TermDateTime - now;
   var RemainingTime = MilliToTime(MilliSeconds)
-
-
-
-
   ZoomLv = map.getZoom();
-
-  // PopupCount追加（12分追加）
   update_PopupCount(e);
-
 
   let infoContent = Popup_Limit12_Info;
   if (Popup_Limit12_URL !== " ") {
@@ -543,7 +406,7 @@ function Popup_Limit12(e) {
     }
   }
 
-  Limit21_PopUp01.remove(); // ポップアップ削除
+  Limit21_PopUp01.remove();
   Limit21_PopUp01 = new maplibregl.Popup()
     .setLngLat(e.lngLat)
     .setHTML(
@@ -604,207 +467,137 @@ function Popup_Limit12(e) {
   });
 };
 
-// クリック属性表示（Limit12）【Point】
-map.on('click', 'Limit12_Share_Info', (e) => {
-  Popup_Limit12(e);
-});
+const geocoderApi = {
+	forwardGeocode: async (config) => {
+	  const features = [];
+	  try {
+		const request =
+		  `https://nominatim.openstreetmap.org/search?q=${
+				  config.query
+			  }&format=geojson&polygon_geojson=1&addressdetails=1`;
+		const response = await fetch(request);
+		const geojson = await response.json();
+		for (const feature of geojson.features) {
+		  const center = [
+			feature.bbox[0] +
+			(feature.bbox[2] - feature.bbox[0]) / 2,
+			feature.bbox[1] +
+			(feature.bbox[3] - feature.bbox[1]) / 2
+		  ];
+		  const point = {
+			type: 'Feature',
+			geometry: {
+			  type: 'Point',
+			  coordinates: center
+			},
+			place_name: feature.properties.display_name,
+			properties: feature.properties,
+			text: feature.properties.display_name,
+			place_type: ['place'],
+			center
+		  };
+		  features.push(point);
+		}
+	  } catch (e) {
+		console.error(`Failed to forwardGeocode with error: ${e}`);
+	  }
+  
+	  return {
+		features
+	  };
+	}
+};
 
-// クリック属性表示（Limit12）【Text】
-map.on('click', 'Limit12_Share_Info_Label', (e) => {
-  Popup_Limit12(e);
-});
+(async () => {
+  let style = await fetch('terrain22.json').then(resp => resp.json())
+  maplibregl.addProtocol("pmtiles", (new pmtiles.Protocol()).tile);
 
+  map = new maplibregl.Map({
+    container: 'map',
+    hash: true,
+    style: style,
+    center: [139.75417, 36.50],
+    zoom: 1,
+    minZoom: 1,
+    maxZoom: 23,
+  })
 
-
-// クリック属性表示（Limit12）【Cluster_Circle】
-map.on('click', 'Limit12_Share_Info_Cluster', (e) => {
-
-  const screenWidth = window.innerWidth; // 画面幅を取得
-
-  // 画面幅に応じて拡大スピードを調整
-  if (screenWidth < 700) {
-    ZoomLv = map.getZoom() + 3;
-  } else {
-    ZoomLv = map.getZoom() + 4;
-  }
-
-  // Clickした地点の座標
-  //	data_Lng = e.lngLat.lng;
-  //	data_Lat = e.lngLat.lat;
-
-  // クラスタリング地物（Features）の中心座標
-  data_Lng = e.features[0].geometry.coordinates[0];
-  data_Lat = e.features[0].geometry.coordinates[1];
-
-
-  Flyto_Point(data_Lng, data_Lat, ZoomLv);
-});
-
-
-//################# クリックイベント #################
-
-
-
-//################# ポップアップ（ダブルクリック） #################
-var popup_contextmenu = new maplibregl.Popup();
-var LongTouch_Flg = false;
-
-var db_user = "";
-var db_Lng = "";
-var db_Lat = "";
-var db_share_info = "test";
-var db_POST_Lng = "";
-var db_POST_Lat = "";
-
-
-// POPUPから登録・参照
-function add_share_info() {
-  db_share_info = document.getElementById("db_share_info").value;
-  db_share_info_URL = document.getElementById("db_share_info_URL").value;
-
-  if (db_share_info !== "" || db_share_info_URL !== "") {
-    popup_contextmenu.remove();
-
-    if (db_share_info === "") {
-      db_share_info = db_share_info_URL;
+  map.on('load', function() {
+    ZoomLv = map.getZoom();
+    if (ZoomLv == 1) {
+      setTimeout(
+        function() {
+          navigator.geolocation.getCurrentPosition(getLocation);
+        }, 1000
+      );
     }
+    getShareInfo();
+    const detailsElement = document.getElementById('newContents');
+    detailsElement.addEventListener('toggle', () => {
+      if (detailsElement.open) {
+        Update_ShareInfo();
+      }
+    });
+  });
+  map.doubleClickZoom.disable();
 
-    // DB登録
-    fetch(API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: 'key=' + encodeURIComponent('add_Sticky_Note') + '&db_user=' + db_user + '&db_share_info=' + db_share_info + '&db_share_info_URL=' + db_share_info_URL + '&db_Lng=' + db_Lng + '&db_Lat=' + db_Lat
-      })
-      .then(getShareInfo())
-
-    console.log('データベースに登録完了');
-  } else {
-
-    alert("コメントが入力されていません。");
-  }
-
-}
-
-
-function PopUp_Context_Menu(e) {
-  ZoomLv = map.getZoom();
-
-  db_user = "guest";
-  db_Lng = e.lngLat.lng;
-  db_Lat = e.lngLat.lat;
-
-  // POPUPの削除
-  popup_contextmenu.remove();
-  Limit21_PopUp01.remove();
-
-  popup_contextmenu = new maplibregl.Popup({
-      closeButton: false
+  map.addControl(
+    new MaplibreGeocoder(geocoderApi, {
+      maplibregl
     })
-    .setLngLat(e.lngLat)
-    .setHTML(
-      '<div id="contextmenu" style="width: 250px;">' +
-      "<b>Post (within 100 characters)</b><br>" +
-      "<input type='hidden' name='db_user' value='" + db_user + "'>" +
-      "<input type='hidden' name='db_Lng' value='" + db_Lng + "'>" +
-      "<input type='hidden' name='db_Lat' value='" + db_Lat + "'>" +
-      "<input  type='text'class='share_info' id='db_share_info' name='db_share_info' placeholder='comment/URL' maxlength='100'> " + " " +
-      "<button id='share_info_Button' class='sendButton' onclick='add_share_info()'><b>POST</b></button><br>" +
-      "<small>リンク </small><input  type='text'class='share_info' id='db_share_info_URL' name='db_share_info_URL' placeholder='URL'  maxlength='100'> " + "<br>" +
-      "<hr>" +
-      "<a href='https://www.google.co.jp/maps?q=" + e.lngLat.lat + "," + e.lngLat.lng + "&hl=ja' target='_blank'>Google Maps</a> / " +
-      "<a href='https://www.google.com/maps/@?api=1&map_action=pano&parameters&viewpoint=" + e.lngLat.lat + ",%20" + e.lngLat.lng + "' target='_blank'>Google Street View</a><br>" +
-      '</div>'
-    );
-  popup_contextmenu.addTo(map);
+  );
 
+  map.addControl(new maplibregl.GeolocateControl({
+    positionOptions: {
+      enableHighAccuracy: true
+    },
+    fitBoundsOptions: {
+      maxZoom: 20
+    },
+    trackUserLocation: true,
+    showUserLocation: true
+  }),
+  'top-right'
+  );
 
-  const textBox = document.getElementById('db_share_info');
-  textBox.focus();
-
-
-}
-//################# ポップアップ（ダブルクリック） #################
-
-
-//################# ダブルクリックメニュー #################
-var DoubleClick_Flg = false;
-map.on('click', function(e) {
-
-  popup_contextmenu.remove();
-
-  if (DoubleClick_Flg) {
-    // ダブルクリックとみなす処理
-    //		console.log('ダブルクリックされました！');
-    PopUp_Context_Menu(e); // 右クリックメニューの呼び出し
-    DoubleClick_Flg = false; // 次のクリックに備えて状態をリセット
-  } else {
-    DoubleClick_Flg = true;
-    setTimeout(() => {
-      DoubleClick_Flg = false; // 一定時間後に状態をリセット
-    }, 300); // 300ミリ秒後にリセット
-  }
-});
-//################# ダブルクリックメニュー #################
-
-
-
-//################# マウスイベント（カーソル制御） #################
-var Popup_Layers_Name = "";
-//マウスイベント【Limit12_Share_Info上で動いている場合】
-map.on('mousemove', 'Limit12_Share_Info', (e) => {
-  map.getCanvas().style.cursor = 'pointer'
-});
-
-//マウスイベント【Limit12_Share_Info_Label上で動いている場合】
-map.on('mousemove', 'Limit12_Share_Info_Label', (e) => {
-  map.getCanvas().style.cursor = 'pointer'
-});
-
-//マウスアウトイベント（Limit12_Share_Info）【元に戻す】
-map.on('mouseleave', 'Limit12_Share_Info', function() {
-  map.getCanvas().style.cursor = '';
-});
-
-//マウスアウトイベント（Limit12_Share_Info_Label）【元に戻す】
-map.on('mouseleave', 'Limit12_Share_Info_Label', function() {
-  map.getCanvas().style.cursor = '';
-});
-
-
-//マウスイベント【Limit12_Share_Info_Cluster上で動いている場合】
-map.on('mousemove', 'Limit12_Share_Info_Cluster', (e) => {
-  map.getCanvas().style.cursor = 'pointer'
-});
-
-//マウスアウトイベント（Limit12_Share_Info_Cluster）【元に戻す】
-map.on('mouseleave', 'Limit12_Share_Info_Cluster', function() {
-  map.getCanvas().style.cursor = '';
-});
-
-
-
-//マウスイベント【ドラッグ】
-map.on('drag', function() {
-  //グラッビングに変更（つかむ）
-  map.getCanvas().style.cursor = 'grabbing';
-});
-
-//マウスイベント【ムーブエンド】
-map.on('moveend', function() {
-  map.getCanvas().style.cursor = ''; //元に戻す
-});
-
-//################# マウスイベント（カーソル制御） #################
-
-
-//################# 画面移動 #################
-map.on('movestart', function() {
-  //Popup削除
-  //	popup_contextmenu.remove();
-
-});
-//################# 画面移動 #################
-
+  map.on('click', 'Limit12_Share_Info', (e) => { Popup_Limit12(e) })
+  map.on('click', 'Limit12_Share_Info_Label', (e) => { Popup_Limit12(e) })
+  map.on('click', 'Limit12_Share_Info_Cluster', (e) => {
+    const screenWidth = window.innerWidth; // 画面幅を取得
+    if (screenWidth < 700) { ZoomLv = map.getZoom() + 3 } else { ZoomLv = map.getZoom() + 4 }
+    data_Lng = e.features[0].geometry.coordinates[0];
+    data_Lat = e.features[0].geometry.coordinates[1];
+    Flyto_Point(data_Lng, data_Lat, ZoomLv);
+  })
+  map.on('click', function(e) {
+    popup_contextmenu.remove();
+    if (DoubleClick_Flg) {
+      PopUp_Context_Menu(e); // 右クリックメニューの呼び出し
+      DoubleClick_Flg = false; // 次のクリックに備えて状態をリセット
+    } else {
+      DoubleClick_Flg = true;
+      setTimeout(() => {
+        DoubleClick_Flg = false; // 一定時間後に状態をリセット
+      }, 300); // 300ミリ秒後にリセット
+    }
+  });
+  map.on('mousemove', 'Limit12_Share_Info', (e) => {
+    map.getCanvas().style.cursor = 'pointer'
+  });
+  map.on('mousemove', 'Limit12_Share_Info_Label', (e) => {
+    map.getCanvas().style.cursor = 'pointer'
+  });
+  map.on('mouseleave', 'Limit12_Share_Info', function() {
+    map.getCanvas().style.cursor = '';
+  });
+  map.on('mouseleave', 'Limit12_Share_Info_Label', function() {
+    map.getCanvas().style.cursor = '';
+  });
+  map.on('mousemove', 'Limit12_Share_Info_Cluster', (e) => {
+    map.getCanvas().style.cursor = 'pointer'
+  });
+  map.on('mouseleave', 'Limit12_Share_Info_Cluster', function() { map.getCanvas().style.cursor = '' })
+  map.on('drag', function() { map.getCanvas().style.cursor = 'grabbing'; })
+  map.on('moveend', function() { map.getCanvas().style.cursor = ''; })
+  map.on('movestart', function() { })
 })()
