@@ -248,7 +248,7 @@ function disp_point_limit12(data) {
     'layout': {
       //			'text-field': ['get', 'Share_Info_Label'],
       "text-field": ["get", "point_count_abbreviated"],
-      "text-font": ["Noto Sans CJK JP Bold"],
+      "text-font": ["NotoSansJP-Regular"],
       //			'text-anchor': 'left',
       //			'text-offset': [0.5, 0],
     },
@@ -292,7 +292,7 @@ function disp_point_limit12(data) {
     'source': 'Limit12_Share_Info',
     'layout': {
       'text-field': ['get', 'Share_Info_Label'],
-      "text-font": ["Noto Sans CJK JP Bold"],
+      "text-font": ["NotoSansJP-Regular"],
       'text-anchor': 'left',
       'text-offset': [0.5, 0],
     },
@@ -319,7 +319,8 @@ function getLocation(getLatLng) {
 setInterval(Update_ShareInfo, 1000 * 60);
 
 (async () => {
-  let style = await fetch('style.json').then(resp => resp.json())
+  let style = await fetch('terrain22.json').then(resp => resp.json())
+  maplibregl.addProtocol("pmtiles", (new pmtiles.Protocol()).tile);
 
   map = new maplibregl.Map({
     container: 'map',
